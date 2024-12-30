@@ -1,0 +1,12 @@
+version: "3.3"
+services:
+  trends:
+    ports:
+      - 5001:5001
+    container_name: trends
+    build:
+      context: ~/repo/trends
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data
