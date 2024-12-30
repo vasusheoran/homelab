@@ -1,0 +1,126 @@
+version: '3.7'
+
+volumes:
+    prometheus_data: {}
+    grafana_data: {}
+
+networks:
+  front-tier:
+  back-tier:
+
+services:
+  prometheus:
+    image: prom/prometheus:v3.0.1
+    volumes:
+      - ./dashboards/prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - 9090:9090
+    links:
+      - cadvisor:cadvisor
+    depends_on:
+      - cadvisor
+    networks:
+      - back-tier
+    restart: always
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.1
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - /:/host:ro,rslave
+    command: 
+      - '--path.rootfs=/host'
+      - '--path.procfs=/host/proc' 
+      - '--path.sysfs=/host/sys'
+      - --collector.filesystem.ignored-mount-points
+      - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
+    ports:
+      - 9100:9100
+    networks:
+      - back-tier
+    restart: always
+    deploy:
+      mode: global
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - 8080:8080
+    networks:
+      - back-tier
+    restart: always
+    deploy:
+      mode: global
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    user: "472"
+    depends_on:
+      - prometheus
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./dashboards/grafana/provisioning/:/etc/grafana/provisioning/
+    env_file:
+      - ./dashboards/grafana/config.monitoring
+    networks:
+      - back-tier
+      - front-tier
+    restart: always
+
+  trends:
+    image: trends:latest
+    ports:
+      - 5001:5001
+    container_name: trends
+    depends_on:
+      - grafana
+    build:
+      context: ~/repo/trends
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./trends/data:/app/data
+
+  jellyfin:
+    image: jellyfin/jellyfin:2024123005  # Use the official Jellyfin image
+    ports:
+      - 8096:8096 
+    container_name: jellyfin
+    depends_on:
+      - grafana  # Optional: If you want to monitor Jellyfin with Prometheus
+    restart: unless-stopped
+    volumes:
+      - ~/jellyfin/config:/config
+      - ~/jellyfin/cache:/cache
+      - type: bind
+        source: ~/jellyfin/shows
+        target: /shows
+      - type: bind
+        source: ~/jellyfin/movies
+        target: /movies
+        read_only: true
+      # Optional - extra fonts to be used during transcoding with subtitle burn-in
+      - type: bind
+        source: ~/jellyfin/fonts
+        target: /usr/local/share/fonts/custom
+        read_only: true
+    environment:
+      - JELLYFIN_PublishedServerUrl=http://jellyfin.com
+    # Optional - may be necessary for docker healthcheck to pass if running in host network mode
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
