@@ -14,3 +14,8 @@ scrape_configs:
   - job_name: 'docker'
     static_configs:
       - targets: ['docker-host:9323']
+  - job_name: trends 
+    metrics_path: /metrics
+    static_configs:
+      - targets: 
+        - trends:5001

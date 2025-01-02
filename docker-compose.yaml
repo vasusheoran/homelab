@@ -1,6 +1,7 @@
 volumes:
     prometheus_data: {}
     grafana_data: {}
+    samba_data: {}
 
 networks:
   front-tier:
@@ -50,6 +51,7 @@ services:
       # - ~/data/samba/homes:/shares/homes
       # - ~/data/samba/vasu:/shares/vasu
       # - ~/data/samba/public:/shares/public
+      # - samba_data:/shares
       - ~/data:/shares
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
@@ -142,13 +144,15 @@ services:
     restart: always
 
   trends:
-    image: trends:0.1.6
+    image: trends:0.1.7
     ports:
       - 5001:5001
     container_name: trends
     depends_on:
       - grafana
     restart: unless-stopped
+    networks:
+      - back-tier
     volumes:
       - ./trends/data:/app/data
 
