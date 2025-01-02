@@ -1,5 +1,3 @@
-version: '3.7'
-
 volumes:
     prometheus_data: {}
     grafana_data: {}
@@ -9,6 +7,67 @@ networks:
   back-tier:
 
 services:
+
+  samba:
+    # build: .
+    image: ghcr.io/servercontainers/samba
+    restart: unless-stopped
+    network_mode: host 
+    environment:
+      # uncomment to enable fail fast (currently only fails fast if there are conflicts/errors during user/group creation)
+      #FAIL_FAST: 1
+
+      MODEL: 'TimeCapsule' 
+      AVAHI_NAME: StorageServer
+      SAMBA_CONF_LOG_LEVEL: 3 
+
+      # uncomment to disable optional services
+      #WSDD2_DISABLE: 1
+      #AVAHI_DISABLE: 1
+      #NETBIOS_DISABLE: 1
+
+      # example for hashed password (user: vasu | password: foobar) - generated using create-hash.sh script.
+      ACCOUNT_vasu: foobar  
+      UID_vasu: 1000
+      GROUPS_vasu: users 
+
+      SAMBA_VOLUME_CONFIG_shared_home: "[Home]; path=/shares/samba/homes/%U; valid users = vasu; guest ok = no; read only = no; browseable = yes"
+      
+      SAMBA_VOLUME_CONFIG_vasuonly: "[Vasu]; path=/shares/samba; valid users = vasu; guest ok = no; read only = no; browseable = yes"
+      
+      SAMBA_VOLUME_CONFIG_adminonly: "[Admin]; path=/shares; valid users = vasu; guest ok = no; read only = no; browseable = yes"
+
+      SAMBA_VOLUME_CONFIG_public: "[Public]; path=/shares/samba/public; valid users = alice, bob, foo; guest ok = no; read only = no; browseable = yes; force group = family"
+      # SAMBA_VOLUME_CONFIG_public_ro: "[Public ReadOnly]; path=/shares/public; guest ok = yes; read only = yes; browseable = yes; force group = family"
+
+      # SAMBA_VOLUME_CONFIG_guestmultilineexample: |
+      #   [Guest Share]
+      #    path = /shares/guest
+      #    guest ok = yes
+      #    browseable = yes
+    volumes:
+      - /etc/avahi/services/:/external/avahi
+      # - ~/data/samba/homes:/shares/homes
+      # - ~/data/samba/vasu:/shares/vasu
+      # - ~/data/samba/public:/shares/public
+      - ~/data:/shares
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - WEBUI_PORT=8081
+      - TORRENTING_PORT=6881
+    volumes:
+      - ~/data/qbittorrent/config:/config
+      - ~/data/qbittorrent/downloads:/downloads #optional
+    ports:
+      - 8081:8081
+      - 6881:6881
+      - 6881:6881/udp
+    restart: unless-stopped
   prometheus:
     image: prom/prometheus:v3.0.1
     volumes:
@@ -83,15 +142,12 @@ services:
     restart: always
 
   trends:
-    image: trends:latest
+    image: trends:0.1.6
     ports:
       - 5001:5001
     container_name: trends
     depends_on:
       - grafana
-    build:
-      context: ~/repo/trends
-      dockerfile: Dockerfile
     restart: unless-stopped
     volumes:
       - ./trends/data:/app/data
@@ -105,18 +161,18 @@ services:
       - grafana  # Optional: If you want to monitor Jellyfin with Prometheus
     restart: unless-stopped
     volumes:
-      - ~/jellyfin/config:/config
-      - ~/jellyfin/cache:/cache
+      - ~/data/jellyfin/config:/config
+      - ~/data/jellyfin/cache:/cache
       - type: bind
-        source: ~/jellyfin/shows
+        source: ~/data/jellyfin/shows
         target: /shows
       - type: bind
-        source: ~/jellyfin/movies
+        source: ~/data/jellyfin/movies
         target: /movies
         read_only: true
       # Optional - extra fonts to be used during transcoding with subtitle burn-in
       - type: bind
-        source: ~/jellyfin/fonts
+        source: ~/data/jellyfin/fonts
         target: /usr/local/share/fonts/custom
         read_only: true
     environment:
