@@ -1,0 +1,48 @@
+---
+services:
+  samba:
+    # build: .
+    image: ghcr.io/servercontainers/samba
+    restart: unless-stopped
+    network_mode: host 
+    environment:
+      # uncomment to enable fail fast (currently only fails fast if there are conflicts/errors during user/group creation)
+      #FAIL_FAST: 1
+
+      MODEL: 'TimeCapsule' 
+      AVAHI_NAME: StorageServer
+      SAMBA_CONF_LOG_LEVEL: 3 
+
+      # uncomment to disable optional services
+      #WSDD2_DISABLE: 1
+      #AVAHI_DISABLE: 1
+      #NETBIOS_DISABLE: 1
+
+      ACCOUNT_homelab: ${ADMIN_PASS}  
+      UID_homelab: ${ADMIN_USER_UID_VALUE}
+      GROUPS_homelab: ${ADMIN_USER_GROUPS_VALUE} 
+      SAMBA_VOLUME_CONFIG_adminonly: ${ADMIN_VOLUME_CONFIG_VALUE}
+
+    volumes:
+      - /etc/avahi/services/:/external/avahi
+      - ${SAMBA_SHARE_1}:/shares/hdd
+      - ${SAMBA_SHARE_2}:/shares/hdd1
+      - ${SAMBA_SHARE_3}:/shares/hdd2
+      
+  jellyfin:
+    image: jellyfin/jellyfin:2024123005  # Use the official Jellyfin image
+    ports:
+      - 8096:8096 
+    container_name: jellyfin
+    volumes:
+      - ${JELLYFIN_CONFIG}:/config
+      - ${JELLYFIN_CACHE}:/cache
+      - ${JELLYFIN_FONTS}:/usr/local/share/fonts/custom
+      - ${JELLYFIN_SHOWS_1}:/shows/qbittorrent
+      - ${JELLYFIN_MOVIES_1}:/movies/qbittorrent
+      - ${JELLYFIN_MOVIES_2}:/movies/hdd2
+      - ${JELLYFIN_SHOWS_2}:/shows/hdd2
+    environment:
+      - JELLYFIN_FFmpeg__probesize=${JELLYFIN_FFMEG_PROBSIZE}
+      - JELLYFIN_FFmpeg__analyzeduration=${JELLYFIN_AALYZED_DURATION}
+    restart: unless-stopped

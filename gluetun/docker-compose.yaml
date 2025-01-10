@@ -1,0 +1,15 @@
+---
+services:
+  gluetun:
+    image: qmcgaw/gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - ${WIREGUARD_CONFIG}:/gluetun/wireguard/wg0.conf
+    environment:
+      - VPN_SERVICE_PROVIDER=custom
+      - VPN_TYPE=wireguard
+    ports:
+      - 8081:8080 # Exposing qBittorrent through Docker Host LAN IP

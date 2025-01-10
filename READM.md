@@ -1,0 +1,2 @@
+sonarr
+homepage/heimdall

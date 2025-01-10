@@ -1,0 +1,17 @@
+---
+services:
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      - PUID=${PUID}
+      - PGID=${GUID}
+      - TZ=Etc/UTC
+      - TORRENTING_PORT=${TORRENTING_PORT}
+    volumes:
+      - ${CONFIG}:/config
+      - ${DOWNLOADS}:/downloads #optional
+    security_opt:
+      - no-new-privileges:true
+    network_mode: "container:gluetun-gluetun-1"
+    restart: unless-stopped

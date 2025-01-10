@@ -1,0 +1,15 @@
+---
+services:
+  firefox:
+      image: lscr.io/linuxserver/firefox:latest
+      container_name: firefox
+      environment:
+        - PUID=${PUID}
+        - PGID=${GUID}
+        - TZ=Etc/UTC
+      network_mode: "container:gluetun-gluetun-1"
+      restart: unless-stopped
+      shm_size: "1gb"
+      ports:
+        - 3001:3001
+        - 5002:3000

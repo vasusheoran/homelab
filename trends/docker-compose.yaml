@@ -1,12 +1,12 @@
-version: "3.3"
+---
 services:
   trends:
+    image: trends:0.1.8
     ports:
       - 5001:5001
     container_name: trends
-    build:
-      context: ~/repo/trends
-      dockerfile: Dockerfile
-    restart: unless-stopped
+    # networks:
+    #   - dashboard
     volumes:
-      - ./data:/app/data
+      - ${TRENDS_DATA}:/app/data
+    restart: unless-stopped
