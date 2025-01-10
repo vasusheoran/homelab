@@ -1,0 +1,15 @@
+---
+services:
+  portainer:
+    image: portainer/portainer-ce:2.21.5
+    container_name: portainer
+    restart: always
+    ports:
+      - "8000:8000"  # Expose port 8000 on the host to 8000 in the container
+      - "9443:9443"  # Expose port 9443 on the host to 9443 in the container
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Mount Docker socket for Portainer to manage Docker
+      - portainer_data:/data  # Mount a persistent volume for Portainer data
+  
+volumes:
+  portainer_data: {}
