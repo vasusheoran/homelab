@@ -6,7 +6,7 @@ services:
       environment:
         - PUID=${PUID}
         - PGID=${GUID}
-        - TZ=Etc/UTC
+        - TZ=Asia/Kolkata
       network_mode: "container:gluetun-gluetun-1"
       restart: unless-stopped
       shm_size: "1gb"

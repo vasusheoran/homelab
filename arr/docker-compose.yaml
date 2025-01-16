@@ -1,0 +1,58 @@
+---
+services:
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Kolkata
+    volumes:
+      - ${PROWLARR_CONFIG}:/config
+    ports:
+      - 9696:9696 # Exposing prowlarr
+    # network_mode: "container:qbittorrent"
+    restart: unless-stopped
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Kolkata
+    volumes:
+      - ${RADARR_CONFIG}:/config
+      - ${RADARR_DATA}:/movies
+      - ${EXTERNAL_DRIVE}:/media/hdd2
+      - ${TORRENT_DOWNLOADS}:/downloads
+    ports:
+      - 7878:7878 # Exposing radarr
+    # network_mode: "container:qbittorrent"
+    restart: unless-stopped
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Kolkata
+    volumes:
+      - ${SONARR_CONFIG}:/config
+      - ${SONARR_DATA}:/shows
+      - ${EXTERNAL_DRIVE}:/media/hdd2
+      - ${TORRENT_DOWNLOADS}:/downloads
+    ports:
+      - 8989:8989
+    restart: unless-stopped
+  recyclarr:
+    image: ghcr.io/recyclarr/recyclarr:latest
+    container_name: recyclarr
+    volumes:
+      - ${RECYCLARR_CONFIG}:/config
+    environment:
+      - TZ=Asia/Kolkata
+      - RECYCLARR_CREATE_CONFIG=true
+      - PUID=1000
+      - PGID=1000
+      - API_KEY_RADARR=${API_KEY_RADARR}
+      - API_KEY_SONARR=${API_KEY_SONARR}

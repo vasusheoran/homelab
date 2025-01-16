@@ -38,11 +38,22 @@ services:
       - ${JELLYFIN_CONFIG}:/config
       - ${JELLYFIN_CACHE}:/cache
       - ${JELLYFIN_FONTS}:/usr/local/share/fonts/custom
-      - ${JELLYFIN_SHOWS_1}:/shows/qbittorrent
-      - ${JELLYFIN_MOVIES_1}:/movies/qbittorrent
-      - ${JELLYFIN_MOVIES_2}:/movies/hdd2
-      - ${JELLYFIN_SHOWS_2}:/shows/hdd2
+      - ${RADARR_DATA}:/movies
+      - ${SONARR_DATA}:/shows
+      - ${EXTERNAL_DRIVE}:/media/hdd2
     environment:
       - JELLYFIN_FFmpeg__probesize=${JELLYFIN_FFMEG_PROBSIZE}
       - JELLYFIN_FFmpeg__analyzeduration=${JELLYFIN_AALYZED_DURATION}
+    restart: unless-stopped
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: jellyseerr
+    environment:
+      - LOG_LEVEL=debug
+      - TZ=Asia/Kolkata
+      - PORT=5055 #optional
+    ports:
+      - 5055:5055
+    volumes:
+      - /path/to/appdata/config:/app/config
     restart: unless-stopped

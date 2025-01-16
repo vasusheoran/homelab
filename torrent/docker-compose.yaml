@@ -24,7 +24,7 @@ services:
     environment:
       - PUID=${PUID}
       - PGID=${GUID}
-      - TZ=Etc/UTC
+      - TZ=Asia/Kolkata
       - TORRENTING_PORT=${TORRENTING_PORT}
     volumes:
       - ${CONFIG}:/config
