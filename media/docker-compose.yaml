@@ -5,6 +5,7 @@ services:
     image: ghcr.io/servercontainers/samba
     restart: unless-stopped
     network_mode: host 
+    container_name: samba
     environment:
       # uncomment to enable fail fast (currently only fails fast if there are conflicts/errors during user/group creation)
       #FAIL_FAST: 1
@@ -45,6 +46,12 @@ services:
       - JELLYFIN_FFmpeg__probesize=${JELLYFIN_FFMEG_PROBSIZE}
       - JELLYFIN_FFmpeg__analyzeduration=${JELLYFIN_AALYZED_DURATION}
     restart: unless-stopped
+    labels:
+      - homepage.group=Media
+      - homepage.name=JellyFin
+      - homepage.icon=jellyfin.png
+      - homepage.href=https://jellyfin.gopala.duckdns.com
+      - homepage.description=Media server
   jellyseerr:
     image: fallenbagel/jellyseerr:latest
     container_name: jellyseerr
@@ -55,5 +62,5 @@ services:
     ports:
       - 5055:5055
     volumes:
-      - /path/to/appdata/config:/app/config
+      - ${JELLYSEER_CONFIG}:/app/config
     restart: unless-stopped

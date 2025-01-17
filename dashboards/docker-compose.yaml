@@ -1,6 +1,7 @@
 ---
 services:
   prometheus:
+    container_name: prometheus
     image: prom/prometheus:v3.0.1
     volumes:
       - ./prometheus/:/etc/prometheus/
@@ -21,6 +22,7 @@ services:
     restart: always
 
   node-exporter:
+    container_name: node-exporter
     image: prom/node-exporter:v1.8.1
     volumes:
       - /proc:/host/proc:ro
@@ -42,6 +44,7 @@ services:
       mode: global
 
   grafana:
+    container_name: grafana
     image: grafana/grafana:11.4.0
     user: "1000"
     depends_on:
@@ -56,8 +59,15 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
       - GF_USERS_ALLOW_SIGN_UP=${GF_USERS_ALLOW_SIGN_UP}
     restart: always
+    labels:
+      - homepage.group=Dashboard
+      - homepage.name=Grafana
+      - homepage.icon=grafana.png
+      - homepage.href=https://grafana.gopala.duckdns.com
+      - homepage.description=Monitoring
 
   cadvisor:
+    container_name: cadvisor
     image: gcr.io/cadvisor/cadvisor
     volumes:
       - /:/rootfs:ro

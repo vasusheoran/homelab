@@ -3,10 +3,14 @@ services:
     image: ghcr.io/gethomepage/homepage:latest
     container_name: homepage
     environment:
-      PUID: 1000 # optional, your user id
-      PGID: 1000 # optional, your group id
+      PUID: 1000
+      PGID: 1000
     ports:
       - 3001:3000
     volumes:
-      - ${HOMEPAGE_CONFIG}:/app/config # Make sure your local config directory exists
+      - ${HOMEPAGE_CONFIG}:/app/config
+      - ${DISK_0}:/disk0
+      - ${DISK_1}:/disk1
+      - ${DISK_2}:/disk2
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped
