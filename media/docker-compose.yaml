@@ -32,6 +32,9 @@ services:
       
   jellyfin:
     image: jellyfin/jellyfin:2024123005  # Use the official Jellyfin image
+    user: 1000:1000
+    group_add:
+      - "993" # Change this to match your "render" host group id and remove this comment
     ports:
       - 8096:8096 
     container_name: jellyfin
@@ -42,16 +45,9 @@ services:
       - ${RADARR_DATA}:/movies
       - ${SONARR_DATA}:/shows
       - ${EXTERNAL_DRIVE}:/media/hdd2
-    environment:
-      - JELLYFIN_FFmpeg__probesize=${JELLYFIN_FFMEG_PROBSIZE}
-      - JELLYFIN_FFmpeg__analyzeduration=${JELLYFIN_AALYZED_DURATION}
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
     restart: unless-stopped
-    labels:
-      - homepage.group=Media
-      - homepage.name=JellyFin
-      - homepage.icon=jellyfin.png
-      - homepage.href=https://jellyfin.gopala.duckdns.com
-      - homepage.description=Media server
   jellyseerr:
     image: fallenbagel/jellyseerr:latest
     container_name: jellyseerr

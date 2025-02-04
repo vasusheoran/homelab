@@ -18,18 +18,18 @@ services:
       - 7878:7878 # Exposing radarr
       # - 3001:3001 # Exposing firefox
       # - 5002:3000 # Exposing firefox
-  qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:latest
-    container_name: qbittorrent-vpn
-    environment:
-      - PUID=${PUID}
-      - PGID=${GUID}
-      - TZ=Asia/Kolkata
-      - TORRENTING_PORT=${TORRENTING_PORT}
-    volumes:
-      - ${CONFIG}:/config
-      - ${DOWNLOADS}:/downloads #optional
-    security_opt:
-      - no-new-privileges:true
-    network_mode: "service:gluetun"
-    restart: unless-stopped
+  # qbittorrent:
+  #   image: lscr.io/linuxserver/qbittorrent:latest
+  #   container_name: qbittorrent-vpn
+  #   environment:
+  #     - PUID=${PUID}
+  #     - PGID=${GUID}
+  #     - TZ=Asia/Kolkata
+  #     - TORRENTING_PORT=${TORRENTING_PORT}
+  #   volumes:
+  #     - ${CONFIG}:/config
+  #     - ${DOWNLOADS}:/downloads #optional
+  #   security_opt:
+  #     - no-new-privileges:true
+  #   network_mode: "service:gluetun"
+  #   restart: unless-stopped

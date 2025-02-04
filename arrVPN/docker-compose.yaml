@@ -1,0 +1,61 @@
+---
+services:
+  gluetun:
+    image: qmcgaw/gluetun
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - ${WIREGUARD_CONFIG}:/gluetun/wireguard/wg0.conf
+    environment:
+      - VPN_SERVICE_PROVIDER=custom
+      - VPN_TYPE=wireguard
+    ports:
+      # - 8081:8080 # Exposing qBittorrent through Docker Host LAN IP
+      - 9696:9696 # Exposing prowlarr
+      - 7878:7878 # Exposing radarr
+      - 8989:8989 # Exposing sonarr
+      # - 3001:3001 # Exposing firefox
+      # - 5002:3000 # Exposing firefox
+  
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Kolkata
+    volumes:
+      - ${PROWLARR_CONFIG}:/config
+    network_mode: "container:gluetun"
+    restart: unless-stopped
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Kolkata
+    volumes:
+      - ${RADARR_CONFIG}:/config
+      - ${RADARR_DATA}:/movies
+      - ${EXTERNAL_DRIVE}:/media/hdd2
+      - ${TORRENT_DOWNLOADS}:/downloads
+    network_mode: "container:gluetun"
+    restart: unless-stopped
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Kolkata
+    volumes:
+      - ${SONARR_CONFIG}:/config
+      - ${SONARR_DATA}:/shows
+      - ${EXTERNAL_DRIVE}:/media/hdd2
+      - ${TORRENT_DOWNLOADS}:/downloads
+    network_mode: "container:gluetun"
+    restart: unless-stopped
