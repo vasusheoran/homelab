@@ -7,6 +7,14 @@ services:
         - PUID=${PUID}
         - PGID=${GUID}
         - TZ=Asia/Kolkata
-      network_mode: "container:gluetun-gluetun-1"
+      network_mode: "container:gluetun"
+
+      networks:
+        my_network:
+          aliases:
+            - firefox
+      # ports:
+      # - 3003:3001 # Exposing firefox
+      # - 5003:3000 # Exposing firefox
       restart: unless-stopped
       shm_size: "1gb"

@@ -26,9 +26,10 @@ services:
 
     volumes:
       - /etc/avahi/services/:/external/avahi
-      - ${SAMBA_SHARE_1}:/shares/hdd
-      - ${SAMBA_SHARE_2}:/shares/hdd1
-      - ${SAMBA_SHARE_3}:/shares/hdd2
+      - ${SAMBA_SHARE}:/shares/hdd
+      - ${EXTERNAL_DRIVE_1}:/shares/hdd1
+      - ${EXTERNAL_DRIVE_2}:/shares/hdd2
+      - ${EXTERNAL_DRIVE_3}:/shares/hdd3
       
   jellyfin:
     image: jellyfin/jellyfin:2024123005  # Use the official Jellyfin image
@@ -44,7 +45,8 @@ services:
       - ${JELLYFIN_FONTS}:/usr/local/share/fonts/custom
       - ${RADARR_DATA}:/movies
       - ${SONARR_DATA}:/shows
-      - ${EXTERNAL_DRIVE}:/media/hdd2
+      - ${EXTERNAL_DRIVE_2}:/media/hdd2
+      - ${EXTERNAL_DRIVE_3}:/media/hdd3
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128
     restart: unless-stopped

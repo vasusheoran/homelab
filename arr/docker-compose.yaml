@@ -1,21 +1,85 @@
 ---
 services:
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      - PUID=${PUID}
+      - PGID=${GUID}
+      - TZ=Asia/Kolkata
+      - TORRENTING_PORT=${TORRENTING_PORT}
+    volumes:
+      - ${CONFIG}:/config
+      - ${DOWNLOADS}:/downloads #optional
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - 8081:8080
+    networks:
+      gluetun-network:
+        ipv4_address: 172.24.0.3
+    depends_on:
+      - gluetun
+    restart: unless-stopped
+
+  gluetun:
+    image: qmcgaw/gluetun
+    container_name: gluetun
+    networks:
+      gluetun-network:
+        ipv4_address: 172.24.0.2
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - ${WIREGUARD_CONFIG}:/gluetun/wireguard/wg0.conf
+    environment:
+      - VPN_SERVICE_PROVIDER=custom
+      - VPN_TYPE=wireguard
+    ports:
+      - "${PROWLARR_PORT:-9696}:9696" # Exposing prowlarr
+      - "${RADARR_PORT:-7878}:7878" # Exposing radarr
+      - "${SONARR_PORT:-8989}:8989" # Exposing sonarr
+      - "${FALREAOLVERR_PORT:-8191}:8191"
+      # - 3002:3001 # Exposing firefox
+      # - 5002:3000 # Exposing firefox
+
+  # flaresolverr:
+  #   # DockerHub mirror flaresolverr/flaresolverr:latest
+  #   image: ghcr.io/flaresolverr/flaresolverr:latest
+  #   container_name: flaresolverr
+  #   environment:
+  #     - LOG_LEVEL=${LOG_LEVEL:-debug}
+  #     - LOG_HTML=${LOG_HTML:-false}
+  #     - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+  #     - TZ=Europe/London
+  #   network_mode: "container:gluetun"
+  #   restart: unless-stopped
+
+  
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
     container_name: prowlarr
+    depends_on:
+      - gluetun
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=Asia/Kolkata
     volumes:
       - ${PROWLARR_CONFIG}:/config
-    ports:
-      - 9696:9696 # Exposing prowlarr
-    # network_mode: "container:qbittorrent"
+    # networks:
+    #   - gluetun-network
+    #     # ipv4_address: 172.24.0.2
+    #   - flaresolverr-network
+    network_mode: "container:gluetun"
     restart: unless-stopped
   radarr:
     image: lscr.io/linuxserver/radarr:latest
     container_name: radarr
+    depends_on:
+      - gluetun
     environment:
       - PUID=1000
       - PGID=1000
@@ -23,15 +87,16 @@ services:
     volumes:
       - ${RADARR_CONFIG}:/config
       - ${RADARR_DATA}:/movies
-      - ${EXTERNAL_DRIVE}:/media/hdd2
+      - ${EXTERNAL_DRIVE_2}:/media/hdd2
+      - ${EXTERNAL_DRIVE_3}:/media/hdd3
       - ${TORRENT_DOWNLOADS}:/downloads
-    ports:
-      - 7878:7878 # Exposing radarr
-    # network_mode: "container:qbittorrent"
+    network_mode: "container:gluetun"
     restart: unless-stopped
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
     container_name: sonarr
+    depends_on:
+      - gluetun
     environment:
       - PUID=1000
       - PGID=1000
@@ -39,20 +104,41 @@ services:
     volumes:
       - ${SONARR_CONFIG}:/config
       - ${SONARR_DATA}:/shows
-      - ${EXTERNAL_DRIVE}:/media/hdd2
+      - ${EXTERNAL_DRIVE_2}:/media/hdd2
+      - ${EXTERNAL_DRIVE_3}:/media/hdd3
       - ${TORRENT_DOWNLOADS}:/downloads
-    ports:
-      - 8989:8989
+    network_mode: "container:gluetun"
     restart: unless-stopped
-  recyclarr:
-    image: ghcr.io/recyclarr/recyclarr:latest
-    container_name: recyclarr
-    volumes:
-      - ${RECYCLARR_CONFIG}:/config
+
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    depends_on:
+      - gluetun
     environment:
-      - TZ=Asia/Kolkata
-      - RECYCLARR_CREATE_CONFIG=true
       - PUID=1000
       - PGID=1000
-      - API_KEY_RADARR=${API_KEY_RADARR}
-      - API_KEY_SONARR=${API_KEY_SONARR}
+      - TZ=Etc/UTC
+    volumes:
+      - ${BAZARR_CONFIG}:/config
+      - ${SONARR_DATA}:/shows
+      - ${RADARR_DATA}:/movies
+      - ${EXTERNAL_DRIVE_2}:/media/hdd2
+      - ${EXTERNAL_DRIVE_3}:/media/hdd3
+    ports:
+      - 6767:6767
+    networks:
+      - gluetun-network
+    restart: unless-stopped
+
+networks:
+  gluetun-network:
+    ipam:
+      config:
+        - subnet: 172.24.0.0/24
+    name: gluetun-network
+  flaresolverr-network:
+    name: flaresolverr-network
+    ipam:
+      config:
+        - subnet: 172.29.0.0/24

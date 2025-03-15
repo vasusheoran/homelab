@@ -9,8 +9,8 @@ services:
       - 3001:3000
     volumes:
       - ${HOMEPAGE_CONFIG}:/app/config
-      - ${DISK_0}:/disk0
-      - ${DISK_1}:/disk1
-      - ${DISK_2}:/disk2
+      - ${EXTERNAL_DRIVE_1}:/disk0
+      - ${EXTERNAL_DRIVE_2}:/disk1
+      - ${EXTERNAL_DRIVE_3}:/disk2
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped
