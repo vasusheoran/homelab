@@ -1,20 +1,18 @@
----
 services:
   firefox:
-      image: lscr.io/linuxserver/firefox:latest
-      container_name: firefox
-      environment:
-        - PUID=${PUID}
-        - PGID=${GUID}
-        - TZ=Asia/Kolkata
-      network_mode: "container:gluetun"
-
-      networks:
-        my_network:
-          aliases:
-            - firefox
-      # ports:
-      # - 3003:3001 # Exposing firefox
-      # - 5003:3000 # Exposing firefox
-      restart: unless-stopped
-      shm_size: "1gb"
+    image: lscr.io/linuxserver/firefox:latest
+    container_name: firefox
+    security_opt:
+      - seccomp:unconfined #optional
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - FIREFOX_CLI=https://www.linuxserver.io/ #optional
+    volumes:
+      - /path/to/config:/config
+    ports:
+      - 3002:3000
+      - 3003:3001
+    shm_size: "1gb"
+    restart: unless-stopped

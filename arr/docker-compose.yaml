@@ -1,4 +1,11 @@
----
+networks:
+  gluetun-network:
+    ipam:
+      config:
+        - subnet: 172.24.0.0/24
+    name: gluetun-network
+
+
 services:
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
@@ -18,8 +25,8 @@ services:
     networks:
       gluetun-network:
         ipv4_address: 172.24.0.3
-    depends_on:
-      - gluetun
+    # depends_on:
+    #   - gluetun
     restart: unless-stopped
 
   gluetun:
@@ -130,15 +137,3 @@ services:
     networks:
       - gluetun-network
     restart: unless-stopped
-
-networks:
-  gluetun-network:
-    ipam:
-      config:
-        - subnet: 172.24.0.0/24
-    name: gluetun-network
-  flaresolverr-network:
-    name: flaresolverr-network
-    ipam:
-      config:
-        - subnet: 172.29.0.0/24
