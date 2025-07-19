@@ -1,16 +1,17 @@
 services:
   firefox:
+    profiles: ["firefox"]
     image: lscr.io/linuxserver/firefox:latest
     container_name: firefox
     security_opt:
       - seccomp:unconfined #optional
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Etc/UTC
+      - PUID=${PUID}
+      - PGID=${GUID}
+      - TZ=Asia/Kolkata
       - FIREFOX_CLI=https://www.linuxserver.io/ #optional
     volumes:
-      - /path/to/config:/config
+      - ${FIREFOX_CONFIG}:/config
     ports:
       - 3002:3000
       - 3003:3001

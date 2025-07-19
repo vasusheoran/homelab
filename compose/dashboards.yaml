@@ -1,11 +1,10 @@
----
 services:
   prometheus:
+    profiles: ["monitoring"]
     container_name: prometheus
     image: prom/prometheus:v3.0.1
     volumes:
-      - ./prometheus/:/etc/prometheus/
-      - prometheus_data:/prometheus
+      - ${PROMETHEUS_CONFIG}:/etc/prometheus/
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -20,8 +19,8 @@ services:
     networks:
       - dashboard
     restart: always
-
   node-exporter:
+    profiles: ["monitoring"]
     container_name: node-exporter
     image: prom/node-exporter:v1.8.1
     volumes:
@@ -29,9 +28,9 @@ services:
       - /sys:/host/sys:ro
       - /:/rootfs:ro
       - /:/host:ro,rslave
-    command: 
+    command:
       - '--path.rootfs=/host'
-      - '--path.procfs=/host/proc' 
+      - '--path.procfs=/host/proc'
       - '--path.sysfs=/host/sys'
       - --collector.filesystem.ignored-mount-points
       - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
@@ -42,8 +41,8 @@ services:
     restart: always
     deploy:
       mode: global
-
   grafana:
+    profiles: ["monitoring"]
     container_name: grafana
     image: grafana/grafana:11.4.0
     user: "1000"
@@ -52,7 +51,7 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - ./grafana/provisioning/:/etc/grafana/provisioning/
+      - ${GRAFANA_CONFIG}:/etc/grafana/provisioning/
     networks:
       - dashboard
     environment:
@@ -66,8 +65,8 @@ services:
       - homepage.icon=grafana.png
       - homepage.href=https://grafana.gopala.duckdns.com
       - homepage.description=Monitoring
-
   cadvisor:
+    profiles: ["monitoring"]
     container_name: cadvisor
     image: gcr.io/cadvisor/cadvisor
     volumes:
@@ -82,9 +81,5 @@ services:
     restart: always
     deploy:
       mode: global
-      
-volumes:
-    prometheus_data: {}
-
 networks:
   dashboard:

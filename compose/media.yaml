@@ -1,43 +1,32 @@
----
 services:
   samba:
-    # build: .
+    profiles: ["media"]
     image: ghcr.io/servercontainers/samba
     restart: unless-stopped
-    network_mode: host 
+    network_mode: host
     container_name: samba
     environment:
-      # uncomment to enable fail fast (currently only fails fast if there are conflicts/errors during user/group creation)
-      #FAIL_FAST: 1
-
-      MODEL: 'TimeCapsule' 
+      MODEL: 'TimeCapsule'
       AVAHI_NAME: StorageServer
-      SAMBA_CONF_LOG_LEVEL: 3 
-
-      # uncomment to disable optional services
-      #WSDD2_DISABLE: 1
-      #AVAHI_DISABLE: 1
-      #NETBIOS_DISABLE: 1
-
-      ACCOUNT_homelab: ${ADMIN_PASS}  
+      SAMBA_CONF_LOG_LEVEL: 3
+      ACCOUNT_homelab: ${ADMIN_PASS}
       UID_homelab: ${ADMIN_USER_UID_VALUE}
-      GROUPS_homelab: ${ADMIN_USER_GROUPS_VALUE} 
+      GROUPS_homelab: ${ADMIN_USER_GROUPS_VALUE}
       SAMBA_VOLUME_CONFIG_adminonly: ${ADMIN_VOLUME_CONFIG_VALUE}
-
     volumes:
       - /etc/avahi/services/:/external/avahi
       - ${SAMBA_SHARE}:/shares/hdd
       - ${EXTERNAL_DRIVE_1}:/shares/hdd1
       - ${EXTERNAL_DRIVE_2}:/shares/hdd2
       - ${EXTERNAL_DRIVE_3}:/shares/hdd3
-      
   jellyfin:
-    image: jellyfin/jellyfin:2024123005  # Use the official Jellyfin image
+    profiles: ["media", "common"]
+    image: jellyfin/jellyfin:2024123005
     user: 1000:1000
     group_add:
-      - "993" # Change this to match your "render" host group id and remove this comment
+      - "993"
     ports:
-      - 8096:8096 
+      - 8096:8096
     container_name: jellyfin
     volumes:
       - ${JELLYFIN_CONFIG}:/config
@@ -49,20 +38,21 @@ services:
       - /dev/dri/renderD128:/dev/dri/renderD128
     restart: unless-stopped
   jellyseer:
+    profiles: ["media"] 
     image: fallenbagel/jellyseerr:latest
     container_name: jellyseer
     environment:
       - LOG_LEVEL=debug
       - TZ=Asia/Kolkata
-      - PORT=5055 #optional
+      - PORT=5055
     ports:
       - 5055:5055
     volumes:
       - ${JELLYSEER_CONFIG}:/app/config
     restart: unless-stopped
     labels:
-    - homepage.group=docker
-    - homepage.name=jellyseer
-    - homepage.icon=emby.png
-    - homepage.href=https://jellyseer.gopala.duckdns.org/
-    - homepage.description=Media server
+      - homepage.group=docker
+      - homepage.name=jellyseer
+      - homepage.icon=emby.png
+      - homepage.href=https://jellyseer.gopala.duckdns.org/
+      - homepage.description=Media server
