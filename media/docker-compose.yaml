@@ -43,8 +43,6 @@ services:
       - ${JELLYFIN_CONFIG}:/config
       - ${JELLYFIN_CACHE}:/cache
       - ${JELLYFIN_FONTS}:/usr/local/share/fonts/custom
-      - ${RADARR_DATA}:/movies
-      - ${SONARR_DATA}:/shows
       - ${EXTERNAL_DRIVE_2}:/media/hdd2
       - ${EXTERNAL_DRIVE_3}:/media/hdd3
     devices:
