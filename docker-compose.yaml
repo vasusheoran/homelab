@@ -1,0 +1,10 @@
+include:
+  - compose/arr.yaml
+  - compose/dashboards.yaml
+  - compose/firefox.yaml
+  - compose/homepage.yaml
+  - compose/media.yaml
+  - compose/nginx.yaml
+  - compose/portainer.yaml
+  - compose/stashapp.yaml
+  - compose/trends.yaml

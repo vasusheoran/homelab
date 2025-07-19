@@ -2,6 +2,7 @@
 # APPDESCRIPTION=An organizer for your porn, written in Go
 services:
   stash:
+    profiles: ["arr"]
     image: stashapp/stash:latest
     container_name: stash
     restart: unless-stopped

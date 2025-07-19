@@ -1,0 +1,10 @@
+services:
+  trends:
+    profiles: ["common"]
+    image: trends:1.2
+    ports:
+      - 5001:5001
+    container_name: trends
+    volumes:
+      - ${TRENDS_DATA}:/app/data
+    restart: unless-stopped
