@@ -128,8 +128,6 @@ services:
       - TZ=Etc/UTC
     volumes:
       - ${BAZARR_CONFIG}:/config
-      - ${SONARR_DATA}:/shows
-      - ${RADARR_DATA}:/movies
       - ${EXTERNAL_DRIVE_2}:/media/hdd2
       - ${EXTERNAL_DRIVE_3}:/media/hdd3
     ports:

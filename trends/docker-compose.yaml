@@ -1,7 +1,7 @@
 ---
 services:
   trends:
-    image: trends:0.1.8
+    image: trends:1.2
     ports:
       - 5001:5001
     container_name: trends
@@ -10,3 +10,31 @@ services:
     volumes:
       - ${TRENDS_DATA}:/app/data
     restart: unless-stopped
+#    deploy:
+#       resources:
+#         limits:
+#           cpus: 0.5
+#           memory: 200m
+#           pids: 1
+#         reservations:
+#           cpus: 0.25
+#           memory: 50m
+  trends-v2:
+    image: trends:0.1.8
+    ports:
+      - 5009:5001
+    container_name: trends-v2
+    # networks:
+    #   - dashboard
+    volumes:
+      - ${TRENDS_DATA_V2}:/app/data
+    restart: unless-stopped
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: 0.5
+#          memory: 1000m
+#          pids: 1
+#        reservations:
+#          cpus: 0.25
+#          memory: 25m
