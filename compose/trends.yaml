@@ -1,7 +1,12 @@
 services:
   trends:
-    profiles: ["common"]
-    image: trends:1.2
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+    profiles: ["common", "minimal"]
+    image: ${TRENDS_IMAGE}
     ports:
       - 5001:5001
     container_name: trends

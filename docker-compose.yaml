@@ -6,7 +6,6 @@ include:
   - compose/media.yaml
   - compose/nginx.yaml
   - compose/portainer.yaml
-  - compose/stashapp.yaml
   - compose/trends.yaml
 
 networks:
@@ -15,3 +14,4 @@ networks:
       config:
         - subnet: 172.24.0.0/24
     name: gluetun-network
+  dashboard:

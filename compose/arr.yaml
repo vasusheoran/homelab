@@ -1,7 +1,12 @@
 services:
   qbittorrent:
-    profiles: ["arr", "common"]
-    image: lscr.io/linuxserver/qbittorrent:latest
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 512M
+    profiles: ["arr", "common", "minimal"]
+    image: ${QBITTORRENT_IMAGE}
     container_name: qbittorrent
     environment:
       - PUID=${PUID}
@@ -20,8 +25,13 @@ services:
         ipv4_address: 172.24.0.3
     restart: unless-stopped
   gluetun:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
     profiles: ["arr", "common"]
-    image: qmcgaw/gluetun
+    image: ${GLUETUN_IMAGE}
     container_name: gluetun
     networks:
       gluetun-network:
@@ -40,72 +50,175 @@ services:
       - "${RADARR_PORT:-7878}:7878"
       - "${SONARR_PORT:-8989}:8989"
       - "${FALREAOLVERR_PORT:-8191}:8191"
+      - "${WHISPARR_PORT:-6969}:6969"
   prowlarr:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
     profiles: ["arr", "common"]
-    image: lscr.io/linuxserver/prowlarr:latest
+    image: ${PROWLARR_IMAGE}
     container_name: prowlarr
     depends_on:
       - gluetun
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=${PUID}
+      - PGID=${GUID}
       - TZ=Asia/Kolkata
     volumes:
       - ${PROWLARR_CONFIG}:/config
     network_mode: "container:gluetun"
     restart: unless-stopped
   radarr:
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 512M
     profiles: ["arr", "common"]
-    image: lscr.io/linuxserver/radarr:latest
+    image: ${RADARR_IMAGE}
     container_name: radarr
     depends_on:
       - gluetun
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=${PUID}
+      - PGID=${GUID}
       - TZ=Asia/Kolkata
     volumes:
       - ${RADARR_CONFIG}:/config
-      - ${RADARR_DATA}:/movies
       - ${EXTERNAL_DRIVE_2}:/media/hdd2
       - ${EXTERNAL_DRIVE_3}:/media/hdd3
       - ${TORRENT_DOWNLOADS}:/downloads
     network_mode: "container:gluetun"
     restart: unless-stopped
   sonarr:
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 512M
     profiles: ["arr", "common"]
-    image: lscr.io/linuxserver/sonarr:latest
+    image: ${SONARR_IMAGE}
     container_name: sonarr
     depends_on:
       - gluetun
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=${PUID}
+      - PGID=${GUID}
       - TZ=Asia/Kolkata
     volumes:
       - ${SONARR_CONFIG}:/config
-      - ${SONARR_DATA}:/shows
       - ${EXTERNAL_DRIVE_2}:/media/hdd2
       - ${EXTERNAL_DRIVE_3}:/media/hdd3
       - ${TORRENT_DOWNLOADS}:/downloads
     network_mode: "container:gluetun"
     restart: unless-stopped
   bazarr:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
     profiles: ["arr", "common"]
-    image: lscr.io/linuxserver/bazarr:latest
+    image: ${BAZARR_IMAGE}
     container_name: bazarr
     depends_on:
       - gluetun
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Etc/UTC
+      - PUID=${PUID}
+      - PGID=${GUID}
+      - TZ=Asia/Kolkata
     volumes:
       - ${BAZARR_CONFIG}:/config
       - ${EXTERNAL_DRIVE_2}:/media/hdd2
       - ${EXTERNAL_DRIVE_3}:/media/hdd3
     ports:
       - 6767:6767
-    networks:
-      - gluetun-network
+    network_mode: "container:gluetun"
     restart: unless-stopped
+  whisparr:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+    profiles: ["arr"]
+    container_name: whisparr
+    image: ${WHISPARR_IMAGE}
+    depends_on:
+      - gluetun
+    network_mode: "container:gluetun"
+    environment:
+      - PUID=${PUID}
+      - PGID=${GUID}
+      - TZ=Asia/Kolkata
+      - UMASK=002
+    volumes:
+      - ${WHISPARR_CONFIG}:/config
+      - ${WHISPARR_DATA}:/data
+  calibre:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+    profiles: ["arr"]
+    image: ${CALIBRE_IMAGE}
+    container_name: calibre
+    environment:
+      - PUID=${PUID}
+      - PGID=${GUID}
+      - TZ=Asia/Kolkata
+    volumes:
+      - ${CALIBRE_CONFIG}:/config
+      - ${CALIBRE_BOOKS}:/books
+    ports:
+      - "8082:8080"
+    restart: unless-stopped
+  stash:
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 512M
+    profiles: ["arr"]
+    image: ${STASH_IMAGE}
+    container_name: stash
+    restart: unless-stopped
+    ## the container's port must be the same with the STASH_PORT in the environment section
+    ports:
+      - "9999:9999"
+    ## If you intend to use stash's DLNA functionality uncomment the below network mode and comment out the above ports section
+    # network_mode: host
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "10"
+        max-size: "2m"
+    environment:
+      - STASH_STASH=/data/
+      - STASH_GENERATED=/generated/
+      - STASH_METADATA=/metadata/
+      - STASH_CACHE=/cache/
+      ## Adjust below to change default port (9999)
+      - STASH_PORT=9999
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      ## Adjust below paths (the left part) to your liking.
+      ## E.g. you can change ./config:/root/.stash to ./stash:/root/.stash
+      ## The left part is the path on your host, the right part is the path in the stash container.
+
+      ## Keep configs, scrapers, and plugins here.
+      - ${STASHAPP_DATA}/config:/root/.stash
+      ## Point this at your collection.
+      ## The left side is where your collection is on your host, the right side is where it will be in stash.
+      - ${STASHAPP_DATA}/data:/data
+      ## This is where your stash's metadata lives
+      - ${STASHAPP_DATA}/metadata:/metadata
+      ## Any other cache content.
+      - ${STASHAPP_DATA}/cache:/cache
+      ## Where to store binary blob data (scene covers, images)
+      - ${STASHAPP_DATA}/blobs:/blobs
+      ## Where to store generated content (screenshots,previews,transcodes,sprites)
+      - ${STASHAPP_DATA}/generated:/generated

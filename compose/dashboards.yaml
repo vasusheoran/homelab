@@ -1,8 +1,13 @@
 services:
   prometheus:
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 512M
     profiles: ["monitoring"]
     container_name: prometheus
-    image: prom/prometheus:v3.0.1
+    image: ${PROMETHEUS_IMAGE}
     volumes:
       - ${PROMETHEUS_CONFIG}:/etc/prometheus/
     command:
@@ -20,9 +25,15 @@ services:
       - dashboard
     restart: always
   node-exporter:
+    deploy:
+      mode: global
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
     profiles: ["monitoring"]
     container_name: node-exporter
-    image: prom/node-exporter:v1.8.1
+    image: ${NODE_EXPORTER_IMAGE}
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
@@ -39,12 +50,15 @@ services:
     networks:
       - dashboard
     restart: always
-    deploy:
-      mode: global
   grafana:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
     profiles: ["monitoring"]
     container_name: grafana
-    image: grafana/grafana:11.4.0
+    image: ${GRAFANA_IMAGE}
     user: "1000"
     depends_on:
       - prometheus
@@ -66,9 +80,15 @@ services:
       - homepage.href=https://grafana.gopala.duckdns.com
       - homepage.description=Monitoring
   cadvisor:
+    deploy:
+      mode: global
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
     profiles: ["monitoring"]
     container_name: cadvisor
-    image: gcr.io/cadvisor/cadvisor
+    image: ${CADVISOR_IMAGE}
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
@@ -79,7 +99,3 @@ services:
     networks:
       - dashboard
     restart: always
-    deploy:
-      mode: global
-networks:
-  dashboard:

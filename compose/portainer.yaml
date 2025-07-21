@@ -1,7 +1,12 @@
 services:
   portainer:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
     profiles: ["portainer"]
-    image: portainer/portainer-ce:2.21.5
+    image: ${PORTAINER_IMAGE}
     container_name: portainer
     restart: always
     ports:
@@ -10,5 +15,4 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
-volumes:
-  portainer_data: {}
+

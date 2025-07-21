@@ -1,7 +1,7 @@
 services:
   samba:
     profiles: ["media"]
-    image: ghcr.io/servercontainers/samba
+    image: ${SAMBA_IMAGE}
     restart: unless-stopped
     network_mode: host
     container_name: samba
@@ -19,9 +19,14 @@ services:
       - ${EXTERNAL_DRIVE_1}:/shares/hdd1
       - ${EXTERNAL_DRIVE_2}:/shares/hdd2
       - ${EXTERNAL_DRIVE_3}:/shares/hdd3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
   jellyfin:
-    profiles: ["media", "common"]
-    image: jellyfin/jellyfin:2024123005
+    profiles: ["media", "common", "minimal"]
+    image: ${JELLYFIN_IMAGE}
     user: 1000:1000
     group_add:
       - "993"
@@ -37,9 +42,14 @@ services:
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 1024M
   jellyseer:
     profiles: ["media"] 
-    image: fallenbagel/jellyseerr:latest
+    image: ${JELLYSEER_IMAGE}
     container_name: jellyseer
     environment:
       - LOG_LEVEL=debug
@@ -56,3 +66,8 @@ services:
       - homepage.icon=emby.png
       - homepage.href=https://jellyseer.gopala.duckdns.org/
       - homepage.description=Media server
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M

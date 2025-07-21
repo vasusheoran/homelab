@@ -1,8 +1,13 @@
 services:
   nginx:
-    profiles: ["common"]
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+    profiles: ["common", "minimal"]
     container_name: nginx
-    image: 'docker.io/jc21/nginx-proxy-manager:latest'
+    image: ${NGINX_IMAGE}
     restart: unless-stopped
     ports:
       - '80:80'

@@ -1,7 +1,12 @@
 services:
   firefox:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
     profiles: ["firefox"]
-    image: lscr.io/linuxserver/firefox:latest
+    image: ${FIREFOX_IMAGE}
     container_name: firefox
     security_opt:
       - seccomp:unconfined #optional

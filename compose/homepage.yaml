@@ -1,7 +1,12 @@
 services:
   homepage:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
     profiles: ["home"]
-    image: ghcr.io/gethomepage/homepage:latest
+    image: ${HOMEPAGE_IMAGE}
     container_name: homepage
     environment:
       PUID: ${PUID}
