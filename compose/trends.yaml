@@ -3,8 +3,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
-          memory: 128M
+#          cpus: '1'
+          memory: 1G
     profiles: ["common", "minimal"]
     image: ${TRENDS_IMAGE}
     ports:

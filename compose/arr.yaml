@@ -51,6 +51,7 @@ services:
       - "${SONARR_PORT:-8989}:8989"
       - "${FALREAOLVERR_PORT:-8191}:8191"
       - "${WHISPARR_PORT:-6969}:6969"
+      - "${BAZAARR_PORT:-6767}:6767"
   prowlarr:
     deploy:
       resources:
@@ -133,8 +134,6 @@ services:
       - ${BAZARR_CONFIG}:/config
       - ${EXTERNAL_DRIVE_2}:/media/hdd2
       - ${EXTERNAL_DRIVE_3}:/media/hdd3
-    ports:
-      - 6767:6767
     network_mode: "container:gluetun"
     restart: unless-stopped
   whisparr:
@@ -157,6 +156,26 @@ services:
     volumes:
       - ${WHISPARR_CONFIG}:/config
       - ${WHISPARR_DATA}:/data
+  calibre-web:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+    profiles: ["arr"]
+    image: ${CALIBRE_WEB_IMAGE}
+    container_name: calibre-web
+    environment:
+      - PUID=${PUID}
+      - PGID=${GUID}
+      - TZ=Asia/Kolkata
+    volumes:
+      - ${CALIBRE_CONFIG}:/config
+      - ${CALIBRE_BOOKS}:/books
+      - ${DOWNLOADS}:/downloads
+    ports:
+      - "8083:8083"
+    restart: unless-stopped
   calibre:
     deploy:
       resources:
@@ -173,6 +192,7 @@ services:
     volumes:
       - ${CALIBRE_CONFIG}:/config
       - ${CALIBRE_BOOKS}:/books
+      - ${DOWNLOADS}:/downloads
     ports:
       - "8082:8080"
     restart: unless-stopped
