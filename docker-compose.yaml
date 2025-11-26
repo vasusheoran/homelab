@@ -3,7 +3,6 @@ include:
   - compose/dashboards.yaml
   - compose/firefox.yaml
   - compose/homepage.yaml
-  - compose/media.yaml
   - compose/nginx.yaml
   - compose/portainer.yaml
   - compose/trends.yaml

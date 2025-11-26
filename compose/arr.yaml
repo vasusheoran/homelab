@@ -89,7 +89,7 @@ services:
     volumes:
       - ${RADARR_CONFIG}:/config
       - ${EXTERNAL_DRIVE_1}:/mnt/media
-      - ${TORRENT_DOWNLOADS}:/downloads
+      - ${DOWNLOADS}:/downloads
     network_mode: "container:gluetun"
     restart: unless-stopped
   sonarr:
@@ -110,7 +110,7 @@ services:
     volumes:
       - ${SONARR_CONFIG}:/config
       - ${EXTERNAL_DRIVE_1}:/mnt/media
-      - ${TORRENT_DOWNLOADS}:/downloads
+      - ${DOWNLOADS}:/downloads
     network_mode: "container:gluetun"
     restart: unless-stopped
   bazarr:
