@@ -29,8 +29,8 @@ fi
 echo "Attempting to get IP address(es) for VMID $VMID..."
 
 # qm guest cmd sends the 'network-get-interfaces' command to the QEMU Guest Agent.
-# jq processes the JSON output to extract IPv4 addresses, excluding loopback (127.0.0.1).
-IP_ADDRESSES=$(qm guest cmd 156 network-get-interfaces 2>/dev/null | \
+# **VMID is now correctly passed using the variable $VMID**
+IP_ADDRESSES=$(qm guest cmd "$VMID" network-get-interfaces 2>/dev/null | \
   jq -r '.[ ] | .["ip-addresses"][]? | select(."ip-address-type" == "ipv4") | .["ip-address"]' | \
   grep -v '^127\.' | \
   tr '\n' ' ')
