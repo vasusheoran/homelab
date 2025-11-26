@@ -3,7 +3,7 @@
 # --- ⚙️ Configuration ---
 
 # Define the permanent location for the IP retrieval script
-LOCAL_SCRIPT_PATH="/root/scripts/get-vm-ip.sh"
+LOCAL_SCRIPT_PATH="$HOME/scripts/get-vm-ip.sh"
 GITHUB_SCRIPT_URL="https://raw.githubusercontent.com/vasusheoran/homelab/refs/heads/master/proxmox/nas/get-vm-ip.sh"
 
 # Configuration: [Mount_Point]
@@ -108,7 +108,7 @@ get_truenas_ip() {
     # 1. Check if the script needs to be downloaded
     if [ ! -f "$LOCAL_SCRIPT_PATH" ]; then
         echo "Script not found at $LOCAL_SCRIPT_PATH. Downloading from GitHub..."
-        mkdir -p /root/scripts # Ensure the target directory exists
+        mkdir -p $HOME/scripts # Ensure the target directory exists
 
         # Fetch the script using curl
         if ! curl -fsSL "$GITHUB_SCRIPT_URL" -o "$LOCAL_SCRIPT_PATH"; then
@@ -220,7 +220,9 @@ for MOUNT_POINT in "${SHARE_CONFIG[@]}"; do
 
         MOUNT_UNIT=$(/usr/bin/basename "$MOUNT_POINT" | /usr/bin/sed 's/^/mnt-tank-/')
 
-        /usr/bin/systemctl start "$MOUNT_UNIT".mount
+        mkdir -p $MOUNT_UNIT
+        
+        sudo /usr/bin/systemctl start "$MOUNT_UNIT".mount
 
         if is_mounted "$MOUNT_POINT"; then
             echo "🟢 Successfully mounted $MOUNT_POINT."

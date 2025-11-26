@@ -57,8 +57,6 @@ MOUNT_OPTIONS="credentials=$HOME/.smbcredentials,vers=3.0,iocharset=utf8,uid=0,g
 cat << EOF > "$STAGING_DIR/mnt-tank-photos.mount"
 [Unit]
 Description=CIFS Mount for TrueNAS Photo Share
-Requires=pve-guests.service
-After=pve-guests.service
 After=network-online.target
 
 [Mount]
@@ -76,8 +74,6 @@ EOF
 cat << EOF > "$STAGING_DIR/mnt-tank-data.mount"
 [Unit]
 Description=CIFS Mount for TrueNAS Data Share
-Requires=pve-guests.service
-After=pve-guests.service
 After=network-online.target
 
 [Mount]
@@ -94,8 +90,6 @@ EOF
 cat << EOF > "$STAGING_DIR/mnt-tank-media.mount"
 [Unit]
 Description=CIFS Mount for TrueNAS Media Share
-Requires=pve-guests.service
-After=pve-guests.service
 After=network-online.target
 
 [Mount]
@@ -112,8 +106,6 @@ EOF
 cat << EOF > "$STAGING_DIR/mnt-tank-docker.mount"
 [Unit]
 Description=CIFS Mount for TrueNAS Docker Share
-Requires=pve-guests.service
-After=pve-guests.service
 After=network-online.target
 
 [Mount]
@@ -145,5 +137,18 @@ sudo systemctl enable check_and_mount_shares.sh
 
 echo "---"
 echo "✅ Configuration applied successfully."
-echo "The system will now wait for TrueNAS ($TRUENAS_IP) to respond before mounting the shares on boot."
-echo "Please reboot to test the new configuration."
+
+# --- 4. EXECUTE MOUNT CHECKER SCRIPT ---
+
+echo "---"
+echo "Running check_and_mount_shares.sh immediately using the provided IP: $TRUENAS_IP"
+# Download and execute the check_and_mount_shares.sh script from GitHub,
+# passing the provided TrueNAS IP using the -i option.
+curl -s "https://raw.githubusercontent.com/vasusheoran/homelab/refs/heads/master/proxmox/nas/check_and_mount_shares.sh" | \
+  bash -s -- -i "$TRUENAS_IP"
+  
+if [ $? -eq 0 ]; then
+    echo "✅ check_and_mount_shares.sh executed successfully."
+else
+    echo "🔴 Error: check_and_mount_shares.sh failed to execute."
+fi
