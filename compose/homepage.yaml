@@ -16,7 +16,5 @@ services:
     volumes:
       - ${HOMEPAGE_CONFIG}:/app/config
       - ${EXTERNAL_DRIVE_1}:/disk0
-      - ${EXTERNAL_DRIVE_2}:/disk1
-      - ${EXTERNAL_DRIVE_3}:/disk2
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped

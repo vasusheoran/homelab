@@ -88,8 +88,7 @@ services:
       - TZ=Asia/Kolkata
     volumes:
       - ${RADARR_CONFIG}:/config
-      - ${EXTERNAL_DRIVE_2}:/media/hdd2
-      - ${EXTERNAL_DRIVE_3}:/media/hdd3
+      - ${EXTERNAL_DRIVE_1}:/mnt/media
       - ${TORRENT_DOWNLOADS}:/downloads
     network_mode: "container:gluetun"
     restart: unless-stopped
@@ -110,8 +109,7 @@ services:
       - TZ=Asia/Kolkata
     volumes:
       - ${SONARR_CONFIG}:/config
-      - ${EXTERNAL_DRIVE_2}:/media/hdd2
-      - ${EXTERNAL_DRIVE_3}:/media/hdd3
+      - ${EXTERNAL_DRIVE_1}:/mnt/media
       - ${TORRENT_DOWNLOADS}:/downloads
     network_mode: "container:gluetun"
     restart: unless-stopped
@@ -132,10 +130,34 @@ services:
       - TZ=Asia/Kolkata
     volumes:
       - ${BAZARR_CONFIG}:/config
-      - ${EXTERNAL_DRIVE_2}:/media/hdd2
-      - ${EXTERNAL_DRIVE_3}:/media/hdd3
+      - ${EXTERNAL_DRIVE_1}:/mnt/media
     network_mode: "container:gluetun"
     restart: unless-stopped
+  jellyseer:
+    profiles: ["arr", "common", "media"]
+    image: ${JELLYSEER_IMAGE}
+    container_name: jellyseer
+    environment:
+      - LOG_LEVEL=debug
+      - TZ=Asia/Kolkata
+      - PORT=5055
+    ports:
+      - 5055:5055
+    volumes:
+      - ${JELLYSEER_CONFIG}:/app/config
+    restart: unless-stopped
+    labels:
+      - homepage.group=docker
+      - homepage.name=jellyseer
+      - homepage.icon=emby.png
+      - homepage.href=https://jellyseer.gopala.duckdns.org/
+      - homepage.description=Media server
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
   whisparr:
     deploy:
       resources:
