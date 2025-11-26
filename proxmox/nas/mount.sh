@@ -63,7 +63,8 @@ After=network-online.target
 What=//$TRUENAS_IP/photos
 Where=/mnt/tank/photos
 Type=cifs
-Options=$MOUNT_OPTIONS
+Options=credentials=$HOME/.smbcredentials,_netdev,x-systemd.automount,noatime,uid=100999,gid=100991,dir_mode=0777,file_mode=0777
+
 
 [Install]
 # This unit will be started manually by wait-for-truenas.service
