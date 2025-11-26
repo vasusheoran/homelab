@@ -19,7 +19,7 @@ services:
     security_opt:
       - no-new-privileges:true
     ports:
-      - 8081:8080
+      - 8080:8080
     networks:
       gluetun-network:
         ipv4_address: 172.24.0.3
@@ -41,7 +41,7 @@ services:
     devices:
       - /dev/net/tun:/dev/net/tun
     volumes:
-      - ${WIREGUARD_CONFIG}:/gluetun/wireguard/wg0.conf
+      - ${WIREGUARD_CONFIG}:/gluetun/wireguard
     environment:
       - VPN_SERVICE_PROVIDER=custom
       - VPN_TYPE=wireguard
@@ -57,7 +57,7 @@ services:
       resources:
         limits:
           cpus: '0.50'
-          memory: 256M
+          memory: 512M 
     profiles: ["arr", "common", "minimal"]
     image: ${PROWLARR_IMAGE}
     container_name: prowlarr
@@ -118,7 +118,7 @@ services:
       resources:
         limits:
           cpus: '0.50'
-          memory: 256M
+          memory: 512M 
     profiles: ["arr", "common", "minimal"]
     image: ${BAZARR_IMAGE}
     container_name: bazarr
