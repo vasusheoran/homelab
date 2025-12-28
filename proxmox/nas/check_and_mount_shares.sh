@@ -6,13 +6,8 @@
 LOCAL_SCRIPT_PATH="$HOME/scripts/get-vm-ip.sh"
 GITHUB_SCRIPT_URL="https://raw.githubusercontent.com/vasusheoran/homelab/refs/heads/master/proxmox/nas/get-vm-ip.sh"
 
-# Configuration: [Mount_Point]
-SHARE_CONFIG=(
-    "/mnt/tank/photos"
-    "/mnt/tank/data"
-    "/mnt/tank/media"
-    "/mnt/tank/docker"
-)
+# Initialize Array
+SHARE_CONFIG=()
 
 # Global variables to store argument choice
 INPUT_TYPE="" # Can be "vmid" or "ip"
@@ -23,7 +18,7 @@ TRUENAS_IP="" # The final IP address used for mounting
 
 # Function to display usage instructions
 usage() {
-    echo "Usage: $0 (-v <VMID> | --vmid <VMID>) | (-i <IP_ADDRESS> | --ip <IP_ADDRESS>)"
+    echo "Usage: $0 -c "/mnt/path/1,/mnt/path/2" (-v <VMID> | --vmid <VMID>) | (-i <IP_ADDRESS> | --ip <IP_ADDRESS>)"
     echo "  -v, --vmid <VMID>        : The Proxmox VMID of the TrueNAS server (e.g., 156)."
     echo "  -i, --ip <IP_ADDRESS>    : The static IP address of the TrueNAS server (e.g., 192.168.1.6)."
     echo ""
@@ -35,7 +30,7 @@ usage() {
 parse_args() {
     # 1. Define options: Short options 'v' and 'i' both require an argument (colon).
     #    Long options 'vmid' and 'ip' also require an argument (= sign).
-    OPTS=$(getopt -o v:i: --long vmid:,ip: --name "$0" -- "$@")
+    OPTS=$(getopt -o v:i:c: --long vmid:,ip:,config: --name "$0" -- "$@")
 
     if [ $? -ne 0 ]; then
         usage
@@ -45,6 +40,28 @@ parse_args() {
 
     while true; do
         case "$1" in
+            -c|--config)
+                # Check if value exists
+                if [[ -n "$2" && "$2" != -* ]]; then
+                    RAW_INPUT="$2"
+                    
+                    # 1. Temporarily set IFS to comma to split the string
+                    # 2. read -ra splits the string into the ADDR array
+                    # 3. '<<<' passes the string into read
+                    IFS=',' read -ra ADDR <<< "$RAW_INPUT"
+                    
+                    # Add the split items to the main configuration array
+                    for path in "${ADDR[@]}"; do
+                        SHARE_CONFIG+=("$path")
+                    done
+                    
+                    shift # Shift past the flag (-c)
+                    shift # Shift past the value
+                else
+                    echo "Error: Argument for $1 is missing."
+                    exit 1
+                fi
+                ;;
             -v|--vmid)
                 # Check for duplicate options
                 if [ -n "$INPUT_TYPE" ]; then usage; fi
@@ -149,26 +166,46 @@ get_truenas_ip() {
 # Function to update the systemd mount unit with the new IP
 update_mount_unit_ip() {
     local MOUNT_POINT="$1"
-    local TARGET_IP="$2" 
-    
+    local TARGET_IP="$2"
+
     local MOUNT_UNIT=$(/usr/bin/basename "$MOUNT_POINT" | /usr/bin/sed 's/^/mnt-tank-/')
     local MOUNT_UNIT_PATH="/etc/systemd/system/${MOUNT_UNIT}.mount"
 
-    if [[ ! -f "$MOUNT_UNIT_PATH" ]]; then
-        echo "ERROR: Mount unit file not found: $MOUNT_UNIT_PATH" >&2
-        return 1
-    fi
-    
+    # Construct the full, desired CIFS path (e.g., //192.168.1.8/media)
     local SHARE_NAME=$(/usr/bin/basename "$MOUNT_POINT")
     local NEW_PATH="//${TARGET_IP}/${SHARE_NAME}"
 
-    if /usr/bin/grep -q "^What=${NEW_PATH}$" "$MOUNT_UNIT_PATH"; then
-        echo "➡️ IP check for $MOUNT_UNIT: IP is already correct ($NEW_PATH). No change needed."
-        return 0
+    if [[ ! -f "$MOUNT_UNIT_PATH" ]]; then
+        echo "INFO: Mount unit file not found: $MOUNT_UNIT_PATH" >&2
+
+        cat <<EOF > $MOUNT_UNIT_PATH
+[Unit]
+Description=CIFS Mount for TrueNAS Media Share
+Requires=network-online.target
+After=network-online.target
+
+[Mount]
+What=$SHARE_NAME
+Where=$NEW_PATH
+Type=cifs
+Options=credentials=/root/.smbcredentials,vers=3.0,iocharset=utf8,uid=0,gid=0,file_mode=0777,dir_mode=0777,nounix
+
+[Install]
+# WantedBy=multi-user.target
+EOF
+    else
+        # 1. Check if the line already matches the desired path
+        if /usr/bin/grep -q "^What=${NEW_PATH}$" "$MOUNT_UNIT_PATH"; then
+            echo "➡️ IP check for $MOUNT_UNIT: IP is already correct ($NEW_PATH). No change needed."
+            return 0
+        fi
+
+        # 2. Substitution: Find the line starting with 'What=' and replace the entire line
+        echo "🚨 What= line corrupted or changed for $MOUNT_UNIT. Forcing update to: ${NEW_PATH}..."
+
+        # Use sed to find the line starting with 'What=' and replace the entire line with the new, correct line.
+        /usr/bin/sed -i "/^What=/c\What=${NEW_PATH}" "$MOUNT_UNIT_PATH"
     fi
-    
-    echo "🚨 What= line corrupted or changed for $MOUNT_UNIT. Forcing update to: ${NEW_PATH}..."
-    /usr/bin/sed -i "/^What=/c\What=${NEW_PATH}" "$MOUNT_UNIT_PATH"
 
     if [[ $? -eq 0 ]]; then
         echo "✅ IP/PATH UPDATE SUCCESS: Reloading systemd daemon..."

@@ -1,0 +1,127 @@
+services:
+  # qbittorrent:
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: "1.00"
+  #         memory: 512M
+  #   image: ${QBITTORRENT_IMAGE}
+  #   container_name: qbittorrent
+  #   environment:
+  #     - PUID=${PUID}
+  #     - PGID=${GUID}
+  #     - TZ=Asia/Kolkata
+  #     - TORRENTING_PORT=${TORRENTING_PORT}
+  #   volumes:
+  #     - ${CONFIG}:/config
+  #     - ${DOWNLOADS}:/downloads
+  #   security_opt:
+  #     - no-new-privileges:true
+  #   ports:
+  #     - 8080:8080
+  #   networks:
+  #     wgdashboard-network:
+  #       ipv4_address: 172.25.0.3
+  #   restart: unless-stopped
+  wgdashboard:
+    image: ghcr.io/wgdashboard/wgdashboard:latest
+    restart: unless-stopped
+    container_name: wgdashboard
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    ports:
+      - 10086:10086/tcp
+      - 61517:61517/udp
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      #- aconf:/etc/amnezia/amneziawg
+      - ${WIREGUARD_CONFIG}:/etc/wireguard
+    #- data:/data
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE # May be needed for loading kernel modules
+  # prowlarr:
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: "0.50"
+  #         memory: 512M
+  #   image: ${PROWLARR_IMAGE}
+  #   container_name: prowlarr
+  #   depends_on:
+  #     - wgdashboard
+  #   environment:
+  #     - PUID=${PUID}
+  #     - PGID=${GUID}
+  #     - TZ=Asia/Kolkata
+  #   volumes:
+  #     - ${PROWLARR_CONFIG}:/config
+  #   network_mode: container:wgdashboard
+  #   restart: unless-stopped
+  # radarr:
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: "1.00"
+  #         memory: 512M
+  #   image: ${RADARR_IMAGE}
+  #   container_name: radarr
+  #   depends_on:
+  #     - wgdashboard
+  #   environment:
+  #     - PUID=${PUID}
+  #     - PGID=${GUID}
+  #     - TZ=Asia/Kolkata
+  #   volumes:
+  #     - ${RADARR_CONFIG}:/config
+  #     - ${EXTERNAL_DRIVE_1}:/mnt/media
+  #     - ${DOWNLOADS}:/downloads
+  #   network_mode: container:wgdashboard
+  #   restart: unless-stopped
+  # sonarr:
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: "1.00"
+  #         memory: 512M
+  #   image: ${SONARR_IMAGE}
+  #   container_name: sonarr
+  #   depends_on:
+  #     - wgdashboard
+  #   environment:
+  #     - PUID=${PUID}
+  #     - PGID=${GUID}
+  #     - TZ=Asia/Kolkata
+  #   volumes:
+  #     - ${SONARR_CONFIG}:/config
+  #     - ${EXTERNAL_DRIVE_1}:/mnt/media
+  #     - ${DOWNLOADS}:/downloads
+  #   network_mode: container:wgdashboard
+  #   restart: unless-stopped
+  # bazarr:
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: "0.50"
+  #         memory: 512M
+  #   image: ${BAZARR_IMAGE}
+  #   container_name: bazarr
+  #   depends_on:
+  #     - wgdashboard
+  #   environment:
+  #     - PUID=${PUID}
+  #     - PGID=${GUID}
+  #     - TZ=Asia/Kolkata
+  #   volumes:
+  #     - ${BAZARR_CONFIG}:/config
+  #     - ${EXTERNAL_DRIVE_1}:/mnt/media
+  #   network_mode: container:wgdashboard
+  #   restart: unless-stopped
+networks:
+  wgdashboard-network:
+    ipam:
+      config:
+        - subnet: 172.25.0.0/24
+    name: wgdashboard-network
+  dashboard: null

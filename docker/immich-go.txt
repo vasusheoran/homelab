@@ -1,0 +1,46 @@
+# ./immich-go upload from-google-photos --server=http://immich.kuchbhi92.duckdns.org --api-key=0u4MrdzPfKYOsWZn36bsJ2k1j4gibjCE0qkOWa2E /root/photos/takeout-*.zip
+. _ _  _ _ . _|_     _  _
+|| | || | ||(_| | ─ (_)(_)
+            v 0.31.0 _)
+
+Log file: /root/.cache/immich-go/immich-go_2025-12-03_12-05-12.log
+
+Asset Tracking Report:
+=====================
+Total Assets:       9481  (15.8 GB)
+  Processed:        8316  (14.4 GB)
+  Discarded:        1139  (1.3 GB)
+  Errors:              0  (0 B)
+  Pending:            26  (33.1 MB)
+
+⚠️  WARNING: 26 assets did not reach a final state!
+
+
+Event Report:
+=============
+
+Discovery (Assets):
+  discovered image                   :    8885  (8.8 GB)
+  discovered video                   :     596  (7.0 GB)
+
+Discovery (Non-Assets):
+  discovered sidecar                 :    8751  (6.3 MB)
+  discovered unknown file            :       1  (-)
+  discovered unsupported file        :       8  (1.5 KB)
+
+Asset Lifecycle (PROCESSED):
+  uploaded successfully              :    8063  (14.0 GB)
+  server asset upgraded              :     242  (316.5 MB)
+  metadata updated                   :    8208  (118.4 MB)
+
+Asset Lifecycle (DISCARDED):
+  server has duplicate               :       3  (50.6 MB)
+  discarded local duplicate          :    1013  (1.3 GB)
+
+Processing Events:
+  associated metadata                :    9455
+  missing metadata                   :      26
+  stacked                            :    1425
+  added to album                     :    1037
+  tagged                             :   15238
+
